@@ -2,6 +2,8 @@
 Fluxonium circuit object
 
 Author: Long Nguyen, lbnguyen@lbl.gov
+based on python code by Konstantin Nesterov
+
 Date: July 1, 2020
 """
 
@@ -13,16 +15,16 @@ sys.dont_write_bytecode = True
 class Fluxonium_qubit(object):
     """A class representing fluxonium qubit"""
 
-    def __init__(self, E_J, E_C, E_L, phi_ext,
-                 nhilbert=25, nlevels=20):
+    def __init__(self, E_J, E_C, E_L, phi_ext=np.pi,
+                 nlev=5, nlev_lc=20):
         """The Hamiltonian is H = 4E_C*n^2 +0.5E_L*phi^2 -E_J*cos(phi+phi_ext)"""
         """Energies have unit of GHz"""
         self.E_J = E_J #Josephson energy
         self.E_C = E_C #Charging energy
         self.E_L = E_L #Inductive energy
         self.phi_ext = phi_ext #External normalized flux
-        self.nhilbert = nhilbert #Size of matrix
-        self.nlevels = nlevels #Number of energy levels simulated, nlevels < nhilbert
+        self.nlev_lc = nlev_lc #Size of matrix
+        self.nlev = nlev #Number of energy levels simulated, nlevels < nhilbert
         self.type = 'qubit'
 
     def __str__(self):
@@ -50,12 +52,12 @@ class Fluxonium_qubit(object):
         return self._phi_ext
 
     @property
-    def nhilbert(self):
-        return self._nhilbert
+    def nlev_lc(self):
+        return self._nlev_lc
 
     @property
-    def nlevels(self):
-        return self._nlevels
+    def nlev(self):
+        return self._nlev
 
     @E_J.setter
     def E_J(self, value):
@@ -63,6 +65,7 @@ class Fluxonium_qubit(object):
             raise Exception('Josephson energy must be positive.')
         else:
             self._E_J = value
+            self._reset_cache()
 
     @E_C.setter
     def E_C(self, value):
@@ -70,6 +73,7 @@ class Fluxonium_qubit(object):
             raise Exception('Charging energy must be positive.')
         else:
             self._E_C = value
+            self._reset_cache()
 
     @E_L.setter
     def E_L(self, value):
@@ -77,33 +81,42 @@ class Fluxonium_qubit(object):
             raise Exception('Inductive energy must be positive.')
         else:
             self._E_L = value
+            self._reset_cache()
 
     @phi_ext.setter
     def phi_ext(self, value):
         self._phi_ext = value
+        self._reset_cache()
 
-    @nhilbert.setter
-    def nhilbert(self, value):
+    @nlev_lc.setter
+    def nlev_lc(self, value):
         if value <= 0:
             raise Exception('Matrix dimension must be positive.')
         else:
-            self._nhilbert = value
+            self._nlev_lc = value
+            self._reset_cache()
 
-    @nlevels.setter
-    def nlevels(self, value):
+    @nlev.setter
+    def nlev(self, value):
         if value <= 0:
             raise Exception('Number of levels must be positive.')
         else:
-            self._nlevels = value
+            self._nlev = value
+            self._reset_cache()
+
+    def _reset_cache(self):
+        """Reset cached data that have already been calculated."""
+        self._eigvals = None
+        self._eigvecs = None
 
     def _phi_lc(self):
         """Phase operator in the LC basis."""
-        return (8 * self.E_C / self.E_L) ** (0.25) * qt.position(self.nhilbert)
+        return (8 * self.E_C / self.E_L) ** (0.25) * qt.position(self.nlev_lc)
 
 
     def _n_lc(self):
         """Charge operator in the LC basis."""
-        return (self.E_L / (8 * self.E_C)) ** (0.25) * qt.momentum(self.nhilbert)
+        return (self.E_L / (8 * self.E_C)) ** (0.25) * qt.momentum(self.nlev_lc)
 
 
     def _hamiltonian_lc(self):
@@ -120,10 +133,29 @@ class Fluxonium_qubit(object):
     def _eigenspectrum_lc(self):
         """Eigenenergies and eigenstates in the LC basis.
         Hold values previously calculated, unless cache is reset"""
-        if self._eigvals is None or self._eigvecs is None:
+        if self._eigvals is None:
             H_lc = self._hamiltonian_lc()
-            self._eigvals, self._eigvecs = H_lc.eigenstates()
-        return self._eigvals, self._eigvecs
+            self._eigvals = H_lc.eigenenergies()
+        return self._eigvals
+
+    def levels(self, nlevels=None):
+        """Eigenenergies of the qubit.
+
+        Parameters
+        ----------
+        nlev : int, optional
+            The number of qubit eigenstates if different from `self.nlev`.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of eigenvalues.
+        """
+        if nlev is None:
+            nlev = self.nlev
+        if nlev < 1 or nlev > self.nlev_lc:
+            raise Exception('`nlev` is out of bounds.')
+        return self._eigenspectrum_lc()[0:nlev]
 
     def level(self, level_index):
         """Energy of a single level of the qubit.
@@ -138,7 +170,7 @@ class Fluxonium_qubit(object):
         float
             Energy of the level.
         """
-        if level_index < 0 or level_index >= self.nhilbert:
+        if level_index < 0 or level_index >= self.nlev_lc:
             raise Exception('The level is out of bounds')
         return self._eigenspectrum_lc()[level_index]
 
@@ -206,7 +238,7 @@ class Fluxonium_qubit(object):
         """
         if nlev is None:
             nlev = self.nlev
-        if nlev < 1 or nlev > self.nhilbert:
+        if nlev < 1 or nlev > self.nlev_lc:
             raise Exception('`nlev` is out of bounds.')
         _, evecs = self._eigenspectrum_lc()
         phi_op = np.zeros((nlev, nlev), dtype=complex)
@@ -230,7 +262,7 @@ class Fluxonium_qubit(object):
         """
         if nlev is None:
             nlev = self.nlev
-        if nlev < 1 or nlev > self.nhilbert:
+        if nlev < 1 or nlev > self.nlev_lc:
             raise Exception('`nlev` is out of bounds.')
         _, evecs = self._eigenspectrum_lc()
         n_op = np.zeros((nlev, nlev), dtype=complex)

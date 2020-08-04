@@ -7,23 +7,33 @@ Date: July 1, 2020
 
 import numpy as np
 from matplotlib import pyplot as plt
-from Fluxonium_v2.circuits import fluxonium
+from circuits import fluxonium
+import plotting_settings
+
 
 #Parameters
 E_J = 3
 E_C = 1
 E_L = 1
-nhilbert = 30
-nlevels = 20
+nlev_lc = 30
+nlev = 20
 phi_ext_array = np.linspace(0,1,101)*np.pi*2
-freqs = np.zeros((len(phi_ext_array), nlevels-1))
-qubit = fluxonium.Fluxonium_qubit(E_J, E_C, E_L, 0, nhilbert, nlevels)
+
+qubit = fluxonium.Fluxonium_qubit(E_J=E_J, E_C=E_C, E_L=E_L,
+                                  nlev=nlev, nlev_lc=nlev_lc)
+
+freq_01 = np.zeros_like(phi_ext_array)
+freq_12 = np.zeros_like(phi_ext_array)
+freq_02 = np.zeros_like(phi_ext_array)
+
 for phi_idx, phi_ext in enumerate(phi_ext_array):
     qubit.phi_ext = phi_ext
-    for level_idx in range(1,nlevels):
-        freqs[phi_idx, level_idx-1] = qubit.level(level_idx) - qubit.level(0)
+    freq_01[phi_idx] = qubit.freq(level1 = 0, level2 = 1)
+    freq_12[phi_idx] = qubit.freq(level1 = 1, level2 = 2)
+    freq_02[phi_idx] = qubit.freq(level1 = 0, level2 = 2)
 
-for idx in range(nlevels - 1):
-    plt.plot(phi_ext_array, freqs[idx])
+plt.plot(phi_ext_array, freq_01)
+plt.plot(phi_ext_array, freq_12)
+plt.plot(phi_ext_array, freq_02)
 plt.show()
 
