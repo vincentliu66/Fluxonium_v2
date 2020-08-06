@@ -25,15 +25,22 @@ qubit = fluxonium.Fluxonium_qubit(E_J=E_J, E_C=E_C, E_L=E_L,
 freq_01 = np.zeros_like(phi_ext_array)
 freq_12 = np.zeros_like(phi_ext_array)
 freq_02 = np.zeros_like(phi_ext_array)
+freq_03 = np.zeros_like(phi_ext_array)
+freq_13 = np.zeros_like(phi_ext_array)
 
 for phi_idx, phi_ext in enumerate(phi_ext_array):
     qubit.phi_ext = phi_ext
     freq_01[phi_idx] = qubit.freq(level1 = 0, level2 = 1)
     freq_12[phi_idx] = qubit.freq(level1 = 1, level2 = 2)
     freq_02[phi_idx] = qubit.freq(level1 = 0, level2 = 2)
+    freq_03[phi_idx] = qubit.freq(level1=0, level2=3)
+    freq_13[phi_idx] = qubit.freq(level1=1, level2=3)
 
 plt.plot(phi_ext_array, freq_01)
 plt.plot(phi_ext_array, freq_12)
 plt.plot(phi_ext_array, freq_02)
+plt.plot(phi_ext_array, freq_03)
+plt.plot(phi_ext_array, freq_13)
+print(plt.rcParams['axes.prop_cycle'].by_key()['color'])
 plt.show()
 

@@ -3,10 +3,16 @@ A module to customize Matplotlib parameters
 """
 
 from matplotlib import pyplot as plt
+from cycler import cycler
 
 plt.figure(figsize=[10,7])
 
-plt.style.use(['seaborn-deep'])
+# plt.style.use(['seaborn-deep'])
+custom_cycler = (cycler(color=['#003262', '#C4820F','#55A868',
+                               '#d62728', '#9467bd','#CCB974',
+                               '#8c564b', '#e377c2', '#7f7f7f',
+                               '#bcbd22', '#17becf','#1f77b4']))
+plt.rc('axes', prop_cycle=custom_cycler)
 
 plt.rc('lines',
        linewidth=3,
@@ -31,7 +37,7 @@ plt.rc('axes',
 plt.rc('xtick',
        top=True,
        labelsize=16,
-       direction='out')
+       direction='in')
 
 plt.rc('xtick.major',
        size=10,
@@ -45,7 +51,7 @@ plt.rc('xtick.minor',
 plt.rc('ytick',
        right=True,
        labelsize=16,
-       direction='out')
+       direction='in')
 
 plt.rc('ytick.major',
        size=10,
