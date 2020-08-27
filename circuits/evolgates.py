@@ -99,6 +99,80 @@ def evolution_operator_microwave(
 
     return U_t
 
+def H_drive_coeff_gate_long(t, args):
+    """
+    The time-dependent coefficient of the drive term for the qutip
+    representation of time-dependent Hamiltonians.
+
+    Example: H = [H_nodrive, [H_drive, H_drive_coeff_gate]]
+
+    H_drive_coeff_gate = xi_x(t) cos(wt) + xi_y(t) sin(wt)
+    Normalization: \int xi(t') dt'= 2\pi for 0 < t' < T_gate
+    If DRAG == True: xi_y(t) = alpha * d xi_x / dt,
+    else: xi_y = 0
+    If SYMM == True: xi_x(t) -> xi_x(t) + beta * d^2 xi_x / dt^2
+    """
+    nu_d = args['omega_d']
+    two_pi_t = 2 * np.pi * t
+    T_gate = args['T_gate']
+    T_edge = args['T_edge']
+    if 'DRAG' in args and args['DRAG']:
+        alpha = args['DRAG_coefficient']
+    else:
+        alpha = 0
+    if 'SYMM' in args and args['SYMM']:
+        beta = args['SYMM_coefficient']
+    else:
+        beta = 0
+    if 'shape' not in args or args['shape'] == 'square':
+        xi_x = 1
+        xi_y = 0
+    elif args['shape'] == 'cos':
+        xi_x = (2 * np.pi / T_gate) * (1 - np.cos(two_pi_t / T_gate))
+        xi_x += beta * (2 * np.pi / T_gate) ** 3 * np.cos(two_pi_t / T_gate)
+        xi_y = 4 * alpha * np.pi ** 2 / T_gate ** 2 * np.sin(two_pi_t / T_gate)
+    elif args['shape'] == 'gauss':
+        sigma = args['sigma']
+        width = sigma * T_gate
+        t_0 = sigma ** -1 * 0.5 * width
+        if t <= T_gate:
+            xi_x = np.exp(-0.5 * (t - t_0) ** 2 / width ** 2)
+        else:
+            xi_x = 0
+        xi_y = alpha*np.gradient(xi_x)
+    elif args['shape'] == 'gauss_flat':
+        sigma = args['sigma']
+        width = sigma * T_edge
+        T_flat = T_gate - T_edge
+        t_0 = sigma ** -1 * 0.5 * width
+        if t <= t_0:
+            xi_x = np.exp(-0.5 * (t - t_0) ** 2 / width ** 2)
+            xi_y = -np.exp(-0.5 * (t - t_0) ** 2 / width ** 2)*(t-t_0)/width**2
+        elif (t>t_0) and (t<T_gate - t_0):
+            xi_x = 1
+            xi_y = 0
+        elif (t>=T_gate - t_0) and (t<=T_gate):
+            xi_x = np.exp(-0.5 * (t - (t_0+T_flat)) ** 2 / width ** 2)
+            xi_y = -np.exp(-0.5 * (t - (t_0+T_flat)) ** 2 / width ** 2) *(t - (t_0+T_flat))/width**2
+        else:
+            xi_x = 0
+            xi_y = 0
+        xi_y = alpha*xi_y
+    else:
+        raise Exception('Urecognized shape.')
+    return (xi_x * np.cos(two_pi_t * nu_d)
+            + xi_y * np.sin(two_pi_t * nu_d))
+
+def evolution_operator_microwave_long(
+        system, H_drive, t_points=None, parallel=False, **kwargs):
+    if t_points is None:
+        T_gate = kwargs['T_gate']
+        t_points = np.linspace(0, T_gate, 2 * int(T_gate) + 1)
+    H_nodrive = system.H()
+    H = [2 * np.pi * H_nodrive, [H_drive, H_drive_coeff_gate_long]]
+    U_t = qt.propagator(H, t_points, [], args=kwargs, parallel=parallel)
+
+    return U_t
 
 def evolution_compspace_microwave(
         system, H_drive, comp_space=['00', '01', '10', '11'],
@@ -156,6 +230,61 @@ def evolution_compspace_microwave(
         U_t[ind_t] = U
     return U_t
 
+def evolution_compspace_microwave_long(
+        system, H_drive, comp_space=['00', '01', '10', '11'],
+        interaction='on', t_points=None, **kwargs):
+    """
+    Partially calculates the evolution operator valid for computational
+    states for the gate activated by a microwave drive.
+
+    Parameters
+    ----------
+    system : :class:`coupobj.CoupledObjects` or similar
+        An object of a quantum system supporting system.H() method
+        for the Hamiltonian.
+    H_drive : :class:`qutip.Qobj`
+        The time-independent part of the driving term.
+        Example: f * (a + a.dag()) or f * qubit.n()
+        Normalization: see `H_drive_coeff_gate` function.
+    comp_space : *list* of int, tuple, or str
+        Four labels of computational subspace of the two qubits with
+        the last label being for the '11' state.
+        Example: ['000', '010', '001', '011'] for the system
+        two qubits + resonator. The first index is the resonator.
+    interaction : 'on' or 'off', optional
+        Determines whether we work in the interacting or noninteracting
+        basis.
+    t_points : *array* of float (optional)
+        Times at which the evolution operator is returned.
+        If None, it is generated from `kwargs['T_gate']`.
+    **kwargs:
+        Contains gate parameters such as pulse shape and gate time.
+
+    Returns
+    -------
+    U_t : *array* of :class:`qutip.Qobj`
+        The evolution operator at time(s) defined in `t_points` written in
+        the basis used by `system`.
+    """
+    if t_points is None:
+        T_gate = kwargs['T_gate']
+        t_points = np.linspace(0, T_gate, 2 * int(T_gate) + 1)
+    H_nodrive = system.H()
+    H = [2 * np.pi * H_nodrive, [H_drive, H_drive_coeff_gate_long]]
+    psi_t = {}
+    psi_t0 = {}
+    for state in comp_space:
+        psi_t0[state] = system.eigvec(state, interaction=interaction)
+        result = qt.sesolve(H, psi_t0[state], t_points, [], args=kwargs,
+                            options=qt.Options(nsteps=25000))
+        psi_t[state] = result.states
+    U_t = np.empty_like(t_points, dtype=object)
+    for ind_t in range(len(t_points)):
+        U = 0
+        for state in comp_space:
+            U += psi_t[state][ind_t] * psi_t0[state].dag()
+        U_t[ind_t] = U
+    return U_t
 
 def evolution_psi_microwave(
         system, H_drive, initial_state, t_points=None, **kwargs):

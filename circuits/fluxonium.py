@@ -130,15 +130,21 @@ class Fluxonium_qubit(object):
         return 4 * E_C * n ** 2 + 0.5 * E_L * phi ** 2 - E_J * delta_phi.cosm()
 
 
-    def _eigenspectrum_lc(self):
+    def _eigenspectrum_lc(self, eigvecs_flag=False):
         """Eigenenergies and eigenstates in the LC basis.
         Hold values previously calculated, unless cache is reset"""
-        if self._eigvals is None:
-            H_lc = self._hamiltonian_lc()
-            self._eigvals = H_lc.eigenenergies()
-        return self._eigvals
+        if not eigvecs_flag:
+            if self._eigvals is None:
+                H_lc = self._hamiltonian_lc()
+                self._eigvals = H_lc.eigenenergies()
+            return self._eigvals
+        else:
+            if self._eigvals is None or self._eigvecs is None:
+                H_lc = self._hamiltonian_lc()
+                self._eigvals, self._eigvecs = H_lc.eigenstates()
+            return self._eigvals, self._eigvecs
 
-    def levels(self, nlevels=None):
+    def levels(self, nlev=None):
         """Eigenenergies of the qubit.
 
         Parameters
@@ -240,7 +246,7 @@ class Fluxonium_qubit(object):
             nlev = self.nlev
         if nlev < 1 or nlev > self.nlev_lc:
             raise Exception('`nlev` is out of bounds.')
-        _, evecs = self._eigenspectrum_lc()
+        _, evecs = self._eigenspectrum_lc(eigvecs_flag=True)
         phi_op = np.zeros((nlev, nlev), dtype=complex)
         for index1 in range(nlev):
             for index2 in range(nlev):
@@ -264,7 +270,7 @@ class Fluxonium_qubit(object):
             nlev = self.nlev
         if nlev < 1 or nlev > self.nlev_lc:
             raise Exception('`nlev` is out of bounds.')
-        _, evecs = self._eigenspectrum_lc()
+        _, evecs = self._eigenspectrum_lc(eigvecs_flag=True)
         n_op = np.zeros((nlev, nlev), dtype=complex)
         for ind1 in range(nlev):
             for ind2 in range(nlev):
