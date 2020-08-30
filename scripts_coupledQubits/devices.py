@@ -17,6 +17,25 @@ devices = {
          # 'mixed multimode fit': r'Processed Data/Fluxonium Coupled to Harmonic Modes/three_modes_mixed_coupling_6_optimized.hdf5',
          # 'charge multimode fit': None,
          # 'coherence data': None
-        }
+        },
 
+    'Augustus 17_2020/08': {
+        'parameters': {'E_J1': 5.2371, #GHz
+                   'E_C1': 1.0565,
+                   'E_L1': 0.7418,
+                   'E_J2': 3.6365,
+                   'E_C2': 1.1343,
+                   'E_L2': 0.6372,
+                   'J_C': 0.2753 #GHz
+                   # 'chain junction length': 0.25, # um
+                   # 'slip junction length': 0.18, # um
+                   # 'slip junction width': 0.19 # um
+                  },
+        'coupling_type' : 'charge',
+         # 'fab': {'etched': False},
+         # 'fluxonium fit': r'Processed Data/Fluxonium/fluxonium_1.hdf5',
+         # 'mixed multimode fit': r'Processed Data/Fluxonium Coupled to Harmonic Modes/three_modes_mixed_coupling_6_optimized.hdf5',
+         # 'charge multimode fit': None,
+         # 'coherence data': None
+        }
 }

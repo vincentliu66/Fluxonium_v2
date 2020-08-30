@@ -22,7 +22,7 @@ plt.close("all")
 time_start = time.time()
 
 take_data_from_input_file = True
-device_name = 'Augustus 17'
+device_name = 'Augustus 17_2020/08'
 nlev_single = 7  # The number of single-qubit levels to show.
 nlev_show = 15  # The number of two-qubit levels to show.
 
@@ -141,14 +141,31 @@ n1_11_21 = np.zeros(len(E_int_range), dtype=complex)
 n2_11_21 = np.zeros_like(n1_11_21, dtype=complex)
 n1_10_20 = np.zeros_like(n1_11_21, dtype=complex)
 n2_10_20 = np.zeros_like(n1_11_21, dtype=complex)
+n1_00_30 = np.zeros_like(n1_11_21, dtype=complex)
+n2_00_30 = np.zeros_like(n1_11_21, dtype=complex)
+n2_01_13 = np.zeros_like(n1_11_21, dtype=complex)
+n1_01_13 = np.zeros_like(n1_11_21, dtype=complex)
+n1_00_13 = np.zeros_like(n1_11_21, dtype=complex)
+n2_00_13 = np.zeros_like(n1_11_21, dtype=complex)
+n1_01_31 = np.zeros_like(n1_11_21, dtype=complex)
+n2_01_31 = np.zeros_like(n1_11_21, dtype=complex)
+
 for indE, E_int in enumerate(E_int_range):
     system = coupled.CoupledObjects(qubit1, qubit2,
                                     [qubit1, qubit2, E_int, coupling_type])
     energies_coupled[:, indE] = system.levels()
     n1_11_21[indE] = system.n_ij(qubit1, '11', '21')
     n1_10_20[indE] = system.n_ij(qubit1, '10', '20')
+    n1_00_30[indE] = system.n_ij(qubit1, '00', '30')
+    n1_01_13[indE] = system.n_ij(qubit1, '01', '13')
+    n1_00_13[indE] = system.n_ij(qubit1, '00', '13')
+    n1_01_31[indE] = system.n_ij(qubit1, '01', '31')
     n2_11_21[indE] = system.n_ij(qubit2, '11', '21')
     n2_10_20[indE] = system.n_ij(qubit2, '10', '20')
+    n2_00_30[indE] = system.n_ij(qubit2, '00', '30')
+    n2_01_13[indE] = system.n_ij(qubit2, '01', '13')
+    n2_00_13[indE] = system.n_ij(qubit2, '00', '13')
+    n2_01_31[indE] = system.n_ij(qubit2, '01', '31')
 
 print('0-1 frequencies detuning (omega_A - omega_B): ',
       qubit1.freq(0, 1) - qubit2.freq(0, 1), ' GHz\n')
@@ -252,14 +269,26 @@ axes_comb3.tick_params(labelsize = 20)
 fig_me = plt.figure(figsize=(16, 9), dpi=100)
 axes_me = fig_me.add_axes([0.1, 0.1, 0.8, 0.7])
 
-axes_me.plot(E_int_range, abs(n1_11_21), lw=2, ls='-',
-             label=r'$|\langle 11 | \hat{n}_1 | 21\rangle| $')
-axes_me.plot(E_int_range, abs(n1_10_20), lw=2, ls='--',
-             label=r'$|\langle 10 | \hat{n}_1 | 20\rangle| $')
-axes_me.plot(E_int_range, abs(n2_11_21), lw=2, ls='-.',
-             label=r'$|\langle 11 | \hat{n}_2 | 21\rangle| $')
-axes_me.plot(E_int_range, abs(n2_10_20), lw=2, ls=':',
-             label=r'$|\langle 10 | \hat{n}_2 | 20\rangle| $')
+# axes_me.plot(E_int_range, abs(n1_11_21), lw=2, ls='-',
+#              label=r'$|\langle 11 | \hat{n}_1 | 21\rangle| $')
+# axes_me.plot(E_int_range, abs(n1_10_20), lw=2, ls='--',
+#              label=r'$|\langle 10 | \hat{n}_1 | 20\rangle| $')
+axes_me.plot(E_int_range, abs(n1_00_30), lw=2, ls=':',
+             label=r'$|\langle 00 | \hat{n}_1 | 30\rangle| $')
+axes_me.plot(E_int_range, abs(n1_01_31), lw=2, ls=':',
+             label=r'$|\langle 01 | \hat{n}_1 | 31\rangle| $')
+axes_me.plot(E_int_range, abs(n1_00_13), lw=2, ls=':',
+             label=r'$|\langle 00 | \hat{n}_1 | 13\rangle| $')
+# axes_me.plot(E_int_range, abs(n2_11_21), lw=2, ls='-.',
+#              label=r'$|\langle 11 | \hat{n}_2 | 21\rangle| $')
+# axes_me.plot(E_int_range, abs(n2_10_20), lw=2, ls=':',
+#              label=r'$|\langle 10 | \hat{n}_2 | 20\rangle| $')
+axes_me.plot(E_int_range, abs(n2_00_30), lw=2, ls=':',
+             label=r'$|\langle 00 | \hat{n}_2 | 30\rangle| $')
+axes_me.plot(E_int_range, abs(n2_01_31), lw=2, ls=':',
+             label=r'$|\langle 01 | \hat{n}_2 | 31\rangle| $')
+axes_me.plot(E_int_range, abs(n2_00_13), lw=2, ls=':',
+             label=r'$|\langle 00 | \hat{n}_2 | 13\rangle| $')
 
 axes_me.legend(fontsize=16)
 axes_me.set_title('Matrix elements of the charge operators', fontsize=20)

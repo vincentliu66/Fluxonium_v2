@@ -27,7 +27,7 @@ def oscillating_func(t,amp,freq,offset):
     return amp*np.cos(2*np.pi*freq*t)+offset
 
 # Device parameters.
-device_name = 'Augustus 17'
+device_name = 'Augustus 17_2020/08'
 device = devices.devices[device_name]
 E_L1 = device['parameters']['E_L1']
 E_C1 = device['parameters']['E_C1']
@@ -43,28 +43,30 @@ J_C = device['parameters']['J_C']
 
 # Gate parameters.
 T_gate = 200
-T_edge = 80
+T_edge = 40
 DRAG = False
 DRAG_coefficient = 1.9
 transition_to_drive = ('11', '21')
 # Scaling of the ideal value given by the inverse matrix element.
-drive_amplitude_factor_array = np.linspace(0.03,0.03, 1)
+drive_amplitude_factor_cancel = 0.03*6.28
+drive_amplitude_factor_array = np.linspace(0.2, 0.7, 51)*2*np.pi*0.0524/0.5
 # drive_amplitude_factor = 0.05*6.28  # 0.95436
 # Drive frequency with respect to the resonance.
-delta_omega_d_array = np.linspace(0.16,0.16,1)
+delta_omega_d_cancel = 0.16
+delta_omega_d_array = np.linspace(0.01,0.08,71)
 
 # Pulse shape.
-shape = 'square'  # 'gauss', 'cos' for 1-cos, or 'square' or 'gauss_flat'
+shape = 'gauss_flat'  # 'gauss', 'cos' for 1-cos, or 'square' or 'gauss_flat'
 sigma = 0.25  # sigma in units of T_gate for shape=='gauss'
 
 # Method to calculate the propagator.
 # 'propagator - full propagator using qt.propagator
 # 'sesolve' - propagator using qt.sesolve for 4 computational states
-method = 'propagator'
+method = 'sesolve'
 
 # Hilbert space.
 # nlev_cav = 4
-nlev_q = 6
+nlev_q = 7
 
 save_figure = False
 filename_prefix = 'stuff'
@@ -92,6 +94,14 @@ system = coupled.CoupledObjects(
 #            [resonator, qubitA, inputs.g1, 'JC-charge'],
 #            [resonator, qubitB, inputs.g2, 'JC-charge'],
 #            [qubitA, qubitB, inputs.J_C, 'charge'])
+
+print('00-03: '+str(abs(system.freq('00', '03'))))
+print('00-30: '+str(abs(system.freq('00', '30'))))
+print('00-13: '+str(abs(system.freq('00', '13'))))
+print('00-31: '+str(abs(system.freq('00', '31'))))
+print('01-31: '+str(abs(system.freq('01', '31'))))
+print('10-13: '+str(abs(system.freq('10', '13'))))
+print('11-21: '+str(abs(system.freq('11', '21'))))
 
 level1, level2 = transition_to_drive[0], transition_to_drive[1]
 
@@ -130,17 +140,16 @@ for a_idx, drive_amplitude_factor in enumerate(drive_amplitude_factor_array):
 
             phase[a_idx, dwd_idx, tind] = np.angle(u11 * u00 / (u10 * u01))
 
-        # completed = dwd_idx + len(delta_omega_d_array)*a_idx
-        # print(str(np.round((completed + 1) / (len(drive_amplitude_factor_array)*len(drive_amplitude_factor_array)) * 100, 2)) + '% completed')
-        # print (str(np.round(time.time()-time_start, 3) )+ 's has elapsed')
+        completed = dwd_idx+1 + len(drive_amplitude_factor_array)*a_idx
+        print(str(np.round(completed/ (len(drive_amplitude_factor_array)*len(drive_amplitude_factor_array)) * 100, 2)) + '% completed')
+        print (str(np.round(time.time()-time_start, 3) )+ 's has elapsed')
 
-# fname = '/Users/longnguyen/Documents/tmp'
-# np.save(fname+'_phaseZZ',phase)
-# phase = np.genfromtxt(fname+'_phaseZZ.txt')
+fname = '/Users/longnguyen/Documents/tmp'
+np.save(fname+'_phaseZZ_1121',phase)
 
-# phase = phase
-plt.plot(t_points, phase[0,0,:],'-h')
-# print ('time elapsed = ' + str(time.time()-time_start))
-plt.xlabel('ns')
-plt.ylabel('phase (rad)')
-plt.show()
+# plt.figure(figsize = [16,9])
+# plt.plot(t_points, np.unwrap(phase[0,0,:]),'-h')
+# # print ('time elapsed = ' + str(time.time()-time_start))
+# plt.xlabel('ns')
+# plt.ylabel('phase (rad)')
+# plt.show()
