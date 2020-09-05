@@ -23,7 +23,7 @@ import scripts_singleQubit.plotting_settings
 plt.close('all')
 
 # Device parameters.
-device_name = 'Augustus 17'
+device_name = 'Augustus 17_2020/08'
 device = devices.devices[device_name]
 E_L1 = device['parameters']['E_L1']
 E_C1 = device['parameters']['E_C1']
@@ -38,20 +38,20 @@ J_C = device['parameters']['J_C']
 
 
 # Gate parameters.
-T_gate = 200
-T_edge = 80
-DRAG = True
-DRAG_coefficient = 1.9
 transition_to_drive = ('11', '21')
 # Scaling of the ideal value given by the inverse matrix element.
-drive_amplitude_factor = 0.0664*6.28  # 0.95436
+drive_amplitude_factor = 0.0664*2*np.pi  # 0.95436
 # Drive frequency with respect to the resonance.
-# delta_omega_d = 0.05
-delta_omega_d_array = np.linspace(-0.0,0.0,1)
+delta_omega_d = 0.0
+delta_omega_d_array = np.linspace(-0.1,0.1,101)
 
 # Pulse shape.
-shape = 'square'  # 'gauss', 'cos' for 1-cos, or 'square' or 'gauss_flat'
-sigma = 0.25  # sigma in units of T_gate for shape=='gauss'
+shape = 'gauss_flat_haonan'  # 'gauss', 'cos' for 1-cos, or 'square' or 'gauss_flat'
+width = 10
+T_flat = 30
+T_gate = T_flat+2*width
+DRAG = True
+DRAG_coefficient = 1.9
 
 # Method to calculate the propagator.
 # 'propagator - full propagator using qt.propagator
@@ -92,7 +92,7 @@ system = coupled.CoupledObjects(
 #            [qubitA, qubitB, inputs.J_C, 'charge'])
 
 level1, level2 = transition_to_drive[0], transition_to_drive[1]
-# '''
+'''
 def oscillating_func(t,amp,freq,offset):
     return amp*np.cos(2*np.pi*freq*t)+offset
 
@@ -113,7 +113,7 @@ for wd_idx, delta_omega_d in enumerate(delta_omega_d_array):
     H_drive = epsilon * (system.n(0) + system.n(1))
     U_t = evol.evolution_operator_microwave_long(
         system, H_drive, comp_space=comp_space, t_points=t_points,
-        T_gate=T_gate, T_edge = T_edge, shape=shape, sigma=sigma,
+        T_gate=T_gate, T_flat = T_flat, shape=shape, width=width,
         DRAG = DRAG, DRAG_coefficient = DRAG_coefficient,
         omega_d=omega_d, interaction=interaction)
     U_f = U_t[-1]
@@ -121,10 +121,10 @@ for wd_idx, delta_omega_d in enumerate(delta_omega_d_array):
     for state in comp_space:
         vec = system.eigvec(state, interaction=interaction)
         U_me[state] = U_f.matrix_element(vec.dag(), vec)
-    for state in comp_space:
-        print(state, np.abs(U_me[state]),
-              (np.angle(U_me[state]
-                        * np.exp(2j * np.pi * system.level(state) * T_gate))) / np.pi)
+    # for state in comp_space:
+    #     print(state, np.abs(U_me[state]),
+    #           (np.angle(U_me[state]
+    #                     * np.exp(2j * np.pi * system.level(state) * T_gate))) / np.pi)
 
     phase_accum = (np.angle(U_me['00']) + np.angle(U_me['11'])
                    - np.angle(U_me['01']) - np.angle(U_me['10']))
@@ -140,15 +140,15 @@ for wd_idx, delta_omega_d in enumerate(delta_omega_d_array):
     P000 = {}
 
     #Plotting
-    fig, axes = plt.subplots(1, 2, figsize=(16, 9))
-    ax011 = axes[0]
-    ax010 = axes[1]
+    # fig, axes = plt.subplots(1, 2, figsize=(16, 9))
+    # ax011 = axes[0]
+    # ax010 = axes[1]
 
     for state in states011:
         P011[state] = evol.prob_transition(system, U_t, '11', state,
                                            interaction=interaction)
-        ax011.plot(t_points, P011[state], lw=2,
-                   label=r'$P(11\rightarrow{})$'.format(state))
+        # ax011.plot(t_points, P011[state], lw=2,
+        #            label=r'$P(11\rightarrow{})$'.format(state))
 
     # guess_amp = np.min(P011['21']) - np.max(P011['21'])
     # guess_freq = 0.06
@@ -158,20 +158,20 @@ for wd_idx, delta_omega_d in enumerate(delta_omega_d_array):
     # eff_freq[wd_idx] = opt[1]
     # ax011.plot(t_points, oscillating_func(t_points,*opt))
 
-    for state in states010:
-        P010[state] = evol.prob_transition(
-            system, U_t, '10', state, interaction=interaction)
-        ax010.plot(t_points, P010[state], lw=2,
-                   label=r'$P_(10\rightarrow {})$'.format(state))
+    # for state in states010:
+    #     P010[state] = evol.prob_transition(
+    #         system, U_t, '10', state, interaction=interaction)
+    #     ax010.plot(t_points, P010[state], lw=2,
+    #                label=r'$P_(10\rightarrow {})$'.format(state))
 
     print(str((wd_idx+1)/len(delta_omega_d_array)*100)+'%')
-# '''
+'''
 fname = '/Users/longnguyen/Documents/tmp'
 # np.savetxt(fname+'_amp.txt',eff_amp)
 # np.savetxt(fname+'_freq.txt',eff_freq)
-textfontsize = 18
+# textfontsize = 18
 
-# eff_amp = np.genfromtxt(fname+'_amp.txt')
+eff_amp = np.genfromtxt(fname+'_amp.txt')
 # eff_freq = np.genfromtxt(fname + '_freq.txt')
 
 # ax011.text(0.98, 0.93,
@@ -205,9 +205,9 @@ textfontsize = 18
 # # detuning_axes[0].set_ylabel('Rabi freq (MHz)')
 # # detuning_axes[1].set_ylabel('Rabi amplitude')
 
-# detuning_fig = plt.figure(figsize=(16, 9))
-# plt.plot(delta_omega_d_array*1e3, eff_amp, 'h')
-# plt.xlabel('Detuning (MHz)')
-# plt.ylabel('Leakage to 12')
+detuning_fig = plt.figure(figsize=(16, 9))
+plt.plot(delta_omega_d_array*1e3, eff_amp, 'h')
+plt.xlabel('Detuning (MHz)')
+plt.ylabel('Leakage to 21')
 
 plt.show()

@@ -22,7 +22,7 @@ import scripts_singleQubit.plotting_settings
 plt.close('all')
 
 # Device parameters.
-device_name = 'Augustus 17'
+device_name = 'Augustus 17_2020/08'
 device = devices.devices[device_name]
 E_L1 = device['parameters']['E_L1']
 E_C1 = device['parameters']['E_C1']
@@ -37,17 +37,20 @@ J_C = device['parameters']['J_C']
 
 
 # Gate parameters.
-T_gate = 80
 transition_to_drive = ('11', '21')
 # Scaling of the ideal value given by the inverse matrix element.
-drive_amplitude_factor = 0.06  # 0.95436
+drive_amplitude_factor = 0.0664*2*np.pi  # 0.95436
 # Drive frequency with respect to the resonance.
-delta_omega_d = 0.05
+delta_omega_d = 0.1
 
 
 # Pulse shape.
-shape = 'gauss'  # 'gauss', 'cos' for 1-cos, or 'square'
-sigma = 0.25  # sigma in units of T_gate for shape=='gauss'
+shape = 'gauss_flat_haonan'  # 'gauss', 'cos' for 1-cos, or 'square'
+width = 10
+T_flat = 100
+T_gate = 2*width + T_flat
+DRAG = True
+DRAG_coefficient = 1.9
 
 # Method to calculate the propagator.
 # 'propagator - full propagator using qt.propagator
@@ -103,7 +106,8 @@ t_points = np.linspace(0, T_gate, 2 * int(T_gate) + 1)
 H_drive = epsilon * (system.n(0) + system.n(1))
 U_t = evol.evolution_operator_microwave_long(
     system, H_drive, comp_space=comp_space, t_points=t_points,
-    T_gate=T_gate, shape=shape, sigma=sigma, omega_d=omega_d,
+    T_flat=T_flat, T_gate=T_gate, shape=shape, width=width, omega_d=omega_d,
+    DRAG = DRAG, DRAG_coefficient = DRAG_coefficient,
     interaction=interaction)
 U_f = U_t[-1]
 U_me = {}

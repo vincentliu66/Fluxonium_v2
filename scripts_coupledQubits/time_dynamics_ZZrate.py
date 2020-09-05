@@ -40,24 +40,21 @@ phi_ext2 = np.pi
 coupling_type = device['coupling_type']
 J_C = device['parameters']['J_C']
 
-
-# Gate parameters.
-T_gate = 200
-T_edge = 40
-DRAG = False
-DRAG_coefficient = 1.9
-transition_to_drive = ('11', '21')
 # Scaling of the ideal value given by the inverse matrix element.
-drive_amplitude_factor_cancel = 0.03*6.28
-drive_amplitude_factor_array = np.linspace(0.2, 0.7, 51)*2*np.pi*0.0524/0.5
+drive_amplitude_factor_array = np.linspace(0.2, 0.7, 51)*2*np.pi*0.091/0.5
 # drive_amplitude_factor = 0.05*6.28  # 0.95436
 # Drive frequency with respect to the resonance.
-delta_omega_d_cancel = 0.16
-delta_omega_d_array = np.linspace(0.01,0.08,71)
+delta_omega_d_array = np.linspace(0.03,0.085,56)
 
 # Pulse shape.
-shape = 'gauss_flat'  # 'gauss', 'cos' for 1-cos, or 'square' or 'gauss_flat'
+shape = 'gauss_flat_haonan'  # 'gauss', 'cos' for 1-cos, or 'square' or 'gauss_flat'
 sigma = 0.25  # sigma in units of T_gate for shape=='gauss'
+DRAG = False
+DRAG_coefficient = 1.9
+transition_to_drive = ('01', '31')
+width = 10
+T_flat = 150
+T_gate = T_flat+2*width
 
 # Method to calculate the propagator.
 # 'propagator - full propagator using qt.propagator
@@ -120,12 +117,12 @@ for a_idx, drive_amplitude_factor in enumerate(drive_amplitude_factor_array):
         if method == 'sesolve':
             U_t = evol.evolution_compspace_microwave_long(
                 system, H_drive, comp_space=comp_space, t_points=t_points,
-                T_gate=T_gate, T_edge = T_edge, shape=shape, sigma=sigma,
+                T_gate=T_gate, T_flat=T_flat, width = width, shape=shape,
                 DRAG = DRAG, omega_d=omega_d, interaction=interaction)
         elif method == 'propagator':
             U_t = evol.evolution_operator_microwave_long(
                 system, H_drive, comp_space=comp_space, t_points=t_points,
-                T_gate=T_gate, T_edge=T_edge, shape=shape, sigma=sigma,
+                T_gate=T_gate, T_flat=T_flat, width = width, shape=shape,
                 DRAG=DRAG, omega_d=omega_d, interaction=interaction)
 
         vec00 = system.eigvec('00')
@@ -145,7 +142,7 @@ for a_idx, drive_amplitude_factor in enumerate(drive_amplitude_factor_array):
         print (str(np.round(time.time()-time_start, 3) )+ 's has elapsed')
 
 fname = '/Users/longnguyen/Documents/tmp'
-np.save(fname+'_phaseZZ_1121',phase)
+np.save(fname+'_phaseZZ_0131',phase)
 
 # plt.figure(figsize = [16,9])
 # plt.plot(t_points, np.unwrap(phase[0,0,:]),'-h')

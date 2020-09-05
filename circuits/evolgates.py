@@ -115,7 +115,6 @@ def H_drive_coeff_gate_long(t, args):
     nu_d = args['omega_d']
     two_pi_t = 2 * np.pi * t
     T_gate = args['T_gate']
-    T_edge = args['T_edge']
     if 'DRAG' in args and args['DRAG']:
         alpha = args['DRAG_coefficient']
     else:
@@ -142,18 +141,39 @@ def H_drive_coeff_gate_long(t, args):
         xi_y = alpha*np.gradient(xi_x)
     elif args['shape'] == 'gauss_flat':
         sigma = args['sigma']
+        T_edge = args['T_edge']
         width = sigma * T_edge
         T_flat = T_gate - T_edge
         t_0 = sigma ** -1 * 0.5 * width
         if t <= t_0:
             xi_x = np.exp(-0.5 * (t - t_0) ** 2 / width ** 2)
-            xi_y = -np.exp(-0.5 * (t - t_0) ** 2 / width ** 2)*(t-t_0)/width**2
+            xi_y = -np.exp(-0.5 * (t - t_0) ** 2 / width ** 2)*(t-t_0)/width**2/3
         elif (t>t_0) and (t<T_gate - t_0):
             xi_x = 1
             xi_y = 0
         elif (t>=T_gate - t_0) and (t<=T_gate):
             xi_x = np.exp(-0.5 * (t - (t_0+T_flat)) ** 2 / width ** 2)
-            xi_y = -np.exp(-0.5 * (t - (t_0+T_flat)) ** 2 / width ** 2) *(t - (t_0+T_flat))/width**2
+            xi_y = -np.exp(-0.5 * (t - (t_0+T_flat)) ** 2 / width ** 2) *(t - (t_0+T_flat))/width**2/3
+        else:
+            xi_x = 0
+            xi_y = 0
+        xi_y = alpha*xi_y
+    elif args['shape'] == 'gauss_flat_haonan':
+        width = args['width']
+        T_flat = args['T_flat']
+        sigma = width / np.sqrt(2 * np.pi)
+        y_offset = np.exp(-(-width) ** 2 / (2 * sigma ** 2))
+        rescale_factor = 1.0 / (1.0 - y_offset)
+
+        if t <= width:
+            xi_x = (np.exp(-0.5 * (t - width) ** 2 / sigma ** 2)-y_offset)*rescale_factor
+            xi_y = (-np.exp(-0.5 * (t - width) ** 2 / sigma ** 2)*(t-width)/sigma**2) * rescale_factor
+        elif (t>width) and (t<width+T_flat):
+            xi_x = 1
+            xi_y = 0
+        elif (t>=width+T_flat) and (t<=2*width+T_flat):
+            xi_x = (np.exp(-0.5 * (t - width-T_flat) ** 2 / sigma ** 2)-y_offset)*rescale_factor
+            xi_y = (-np.exp(-0.5 * (t - width-T_flat) ** 2 / sigma ** 2)*(t-width-T_flat)/sigma**2) * rescale_factor
         else:
             xi_x = 0
             xi_y = 0
