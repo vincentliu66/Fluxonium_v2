@@ -3,8 +3,8 @@ from matplotlib import pyplot as plt
 import scripts_singleQubit.plotting_settings
 from scipy.optimize import curve_fit
 
-width = 10
-T_flat = 150
+width = 20
+T_flat = 160
 T_gate = T_flat+2*width
 t_points = np.linspace(0, T_gate, 2*int(T_gate) + 1)
 
