@@ -92,6 +92,13 @@ system = coupled.CoupledObjects(
 
 level1, level2 = transition_to_drive[0], transition_to_drive[1]
 
+print ('10-20 freq:'+str(abs(system.freq('10', '20'))))
+print ('11-21 freq:'+str(abs(system.freq('11', '21'))))
+print ('nA(10-20)='+str(system.n_ij(qubitA, '10', '20')))
+print ('nB(10-20)='+str(system.n_ij(qubitB, '10', '20')))
+print ('nA(11-21)='+str(system.n_ij(qubitA, '11', '21')))
+print ('nB(11-21)='+str(system.n_ij(qubitB, '11', '21')))
+
 # Calculate the drive frequency.
 omega_d = abs(system.freq(level1, level2)) + delta_omega_d
 # Calculate the drive amplitude.

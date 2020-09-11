@@ -41,19 +41,19 @@ coupling_type = device['coupling_type']
 J_C = device['parameters']['J_C']
 
 # Scaling of the ideal value given by the inverse matrix element.
-drive_amplitude_factor_array = np.linspace(0.2, 0.7, 51)*2*np.pi*0.091/0.5
+drive_amplitude_factor_array = np.linspace(0.2, 0.7, 51)*2*np.pi*0.0524/0.5
 # drive_amplitude_factor = 0.05*6.28  # 0.95436
 # Drive frequency with respect to the resonance.
-delta_omega_d_array = np.linspace(0.03,0.085,56)
+delta_omega_d_array = np.linspace(0.01,0.08,71)
 
 # Pulse shape.
 shape = 'gauss_flat_haonan'  # 'gauss', 'cos' for 1-cos, or 'square' or 'gauss_flat'
 sigma = 0.25  # sigma in units of T_gate for shape=='gauss'
 DRAG = False
 DRAG_coefficient = 1.9
-transition_to_drive = ('01', '31')
-width = 10
-T_flat = 150
+transition_to_drive = ('11', '21')
+width = 20
+T_flat = 160
 T_gate = T_flat+2*width
 
 # Method to calculate the propagator.
@@ -92,16 +92,16 @@ system = coupled.CoupledObjects(
 #            [resonator, qubitB, inputs.g2, 'JC-charge'],
 #            [qubitA, qubitB, inputs.J_C, 'charge'])
 
-print('00-03: '+str(abs(system.freq('00', '03'))))
-print('00-30: '+str(abs(system.freq('00', '30'))))
-print('00-13: '+str(abs(system.freq('00', '13'))))
-print('00-31: '+str(abs(system.freq('00', '31'))))
-print('01-31: '+str(abs(system.freq('01', '31'))))
-print('10-13: '+str(abs(system.freq('10', '13'))))
-print('11-21: '+str(abs(system.freq('11', '21'))))
+# print('00-03: '+str(abs(system.freq('00', '03'))))
+# print('00-30: '+str(abs(system.freq('00', '30'))))
+# print('00-13: '+str(abs(system.freq('00', '13'))))
+# print('00-31: '+str(abs(system.freq('00', '31'))))
+# print('01-31: '+str(abs(system.freq('01', '31'))))
+# print('10-13: '+str(abs(system.freq('10', '13'))))
+# print('11-21: '+str(abs(system.freq('11', '21'))))
 
 level1, level2 = transition_to_drive[0], transition_to_drive[1]
-
+coupl_ratio = 0.7718
 t_points = np.linspace(0, T_gate, 2*int(T_gate) + 1)
 phase = np.zeros((len(drive_amplitude_factor_array), len(delta_omega_d_array), len(t_points)))
 for a_idx, drive_amplitude_factor in enumerate(drive_amplitude_factor_array):
@@ -110,10 +110,10 @@ for a_idx, drive_amplitude_factor in enumerate(drive_amplitude_factor_array):
         omega_d = abs(system.freq(level1, level2)) + delta_omega_d
         # Calculate the drive amplitude.
         matr_el = np.abs(system.n_ij(qubitA, level1, level2)
-                         + system.n_ij(qubitB, level1, level2))
+                         + coupl_ratio*system.n_ij(qubitB, level1, level2))
         epsilon = drive_amplitude_factor / abs(matr_el)
         # The time-independent operator part of the drive term.
-        H_drive = epsilon * (system.n(0) + system.n(1))
+        H_drive = epsilon * (system.n(0) + coupl_ratio*system.n(1))
         if method == 'sesolve':
             U_t = evol.evolution_compspace_microwave_long(
                 system, H_drive, comp_space=comp_space, t_points=t_points,
@@ -142,7 +142,7 @@ for a_idx, drive_amplitude_factor in enumerate(drive_amplitude_factor_array):
         print (str(np.round(time.time()-time_start, 3) )+ 's has elapsed')
 
 fname = '/Users/longnguyen/Documents/tmp'
-np.save(fname+'_phaseZZ_0131',phase)
+np.save(fname+'_phaseZZ_1121',phase)
 
 # plt.figure(figsize = [16,9])
 # plt.plot(t_points, np.unwrap(phase[0,0,:]),'-h')
