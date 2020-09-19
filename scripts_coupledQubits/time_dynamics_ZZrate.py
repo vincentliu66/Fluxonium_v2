@@ -32,18 +32,16 @@ device = devices.devices[device_name]
 E_L1 = device['parameters']['E_L1']
 E_C1 = device['parameters']['E_C1']
 E_J1 = device['parameters']['E_J1']
-phi_ext1 = np.pi
+phi_ext1 = 1.01*np.pi
 E_L2 = device['parameters']['E_L2']
 E_C2 = device['parameters']['E_C2']
 E_J2 = device['parameters']['E_J2']
-phi_ext2 = np.pi
+phi_ext2 = 1.01*np.pi
 coupling_type = device['coupling_type']
 J_C = device['parameters']['J_C']
 
 # Scaling of the ideal value given by the inverse matrix element.
 drive_amplitude_factor_array = np.linspace(0.2, 0.7, 51)*2*np.pi*0.0524/0.5
-# drive_amplitude_factor = 0.05*6.28  # 0.95436
-# Drive frequency with respect to the resonance.
 delta_omega_d_array = np.linspace(0.01,0.08,71)
 
 # Pulse shape.
@@ -81,9 +79,9 @@ states000 = ['00']
 
 time_start = time.time()
 qubitA = fluxonium.Fluxonium_qubit(
-    E_L=E_L1, E_C=E_C1, E_J=E_J1, nlev=nlev_q)
+    E_L=E_L1, E_C=E_C1, E_J=E_J1, nlev=nlev_q, phi_ext=phi_ext1)
 qubitB = fluxonium.Fluxonium_qubit(
-    E_L=E_L2, E_C=E_C2, E_J=E_J2, nlev=nlev_q)
+    E_L=E_L2, E_C=E_C2, E_J=E_J2, nlev=nlev_q, phi_ext=phi_ext2)
 # resonator = cqed.Cavity(omega=inputs.omega_c, nlev=nlev_cav)
 system = coupled.CoupledObjects(
     qubitA, qubitB, [qubitA, qubitB, J_C, 'charge'])
@@ -142,7 +140,7 @@ for a_idx, drive_amplitude_factor in enumerate(drive_amplitude_factor_array):
         print (str(np.round(time.time()-time_start, 3) )+ 's has elapsed')
 
 fname = '/Users/longnguyen/Documents/tmp'
-np.save(fname+'_phaseZZ_1121',phase)
+np.save(fname+'_phaseZZ_1121_away',phase)
 
 # plt.figure(figsize = [16,9])
 # plt.plot(t_points, np.unwrap(phase[0,0,:]),'-h')

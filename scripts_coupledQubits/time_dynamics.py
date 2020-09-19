@@ -94,10 +94,45 @@ level1, level2 = transition_to_drive[0], transition_to_drive[1]
 
 print ('10-20 freq:'+str(abs(system.freq('10', '20'))))
 print ('11-21 freq:'+str(abs(system.freq('11', '21'))))
+
+print ('nA(00-10)='+str(system.n_ij(qubitA, '00', '10')))
+print ('nB(00-10)='+str(system.n_ij(qubitB, '00', '10')))
+
+print ('nA(00-01)='+str(system.n_ij(qubitA, '00', '01')))
+print ('nB(00-01)='+str(system.n_ij(qubitB, '00', '01')))
+
+print ('nA(01-02)='+str(system.n_ij(qubitA, '01', '02')))
+print ('nB(01-02)='+str(system.n_ij(qubitB, '01', '02')))
+
+print ('nA(11-12)='+str(system.n_ij(qubitA, '11', '12')))
+print ('nB(11-12)='+str(system.n_ij(qubitB, '11', '12')))
+
 print ('nA(10-20)='+str(system.n_ij(qubitA, '10', '20')))
 print ('nB(10-20)='+str(system.n_ij(qubitB, '10', '20')))
+
 print ('nA(11-21)='+str(system.n_ij(qubitA, '11', '21')))
 print ('nB(11-21)='+str(system.n_ij(qubitB, '11', '21')))
+
+#30 <-> 13
+print ('nA(20-30)='+str(system.n_ij(qubitA, '20', '13')))
+print ('nB(20-30)='+str(system.n_ij(qubitB, '20', '13')))
+
+print ('nA(21-31)='+str(system.n_ij(qubitA, '21', '31')))
+print ('nB(21-31)='+str(system.n_ij(qubitB, '21', '31')))
+
+print ('nA(00-03)='+str(system.n_ij(qubitA, '00', '03')))
+print ('nB(00-03)='+str(system.n_ij(qubitB, '00', '03')))
+
+#30 <-> 13
+print ('nA(10-13)='+str(system.n_ij(qubitA, '10', '30')))
+print ('nB(10-013)='+str(system.n_ij(qubitB, '10', '30')))
+
+print ('nA(01-31)='+str(system.n_ij(qubitA, '01', '31')))
+print ('nB(01-31)='+str(system.n_ij(qubitB, '01', '31')))
+
+#30 <-> 13
+print ('nA(00-30)='+str(system.n_ij(qubitA, '00', '13')))
+print ('nB(00-30)='+str(system.n_ij(qubitB, '00', '13')))
 
 # Calculate the drive frequency.
 omega_d = abs(system.freq(level1, level2)) + delta_omega_d
