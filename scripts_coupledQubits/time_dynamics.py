@@ -134,6 +134,13 @@ print ('nB(01-31)='+str(system.n_ij(qubitB, '01', '31')))
 print ('nA(00-30)='+str(system.n_ij(qubitA, '00', '13')))
 print ('nB(00-30)='+str(system.n_ij(qubitB, '00', '13')))
 
+print ('nA(00-31)='+str(system.n_ij(qubitA, '00', '31')))
+print ('nB(00-31)='+str(system.n_ij(qubitB, '00', '31')))
+
+#30 <-> 13
+print ('nA(00-13)='+str(system.n_ij(qubitA, '00', '30')))
+print ('nB(00-13)='+str(system.n_ij(qubitB, '00', '30')))
+
 # Calculate the drive frequency.
 omega_d = abs(system.freq(level1, level2)) + delta_omega_d
 # Calculate the drive amplitude.

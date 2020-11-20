@@ -4,5 +4,6 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../Data_analysis" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../Fluxonium" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../berkeleyzp" vcs="Git" />
   </component>
 </project>

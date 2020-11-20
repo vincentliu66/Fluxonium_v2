@@ -9,6 +9,7 @@
     <orderEntry type="module" module-name="Fluxonium" />
     <orderEntry type="module" module-name="Layout" />
     <orderEntry type="module" module-name="qnldraw" />
+    <orderEntry type="module" module-name="berkeleyzp" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />
