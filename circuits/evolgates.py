@@ -418,6 +418,7 @@ def prob_transition(
     Returns
     -------
     float or *array* of float
+    float or *array* of float
         Transition probability.
     """
     psi_t0 = system.eigvec(initial_state, interaction=interaction)
