@@ -140,7 +140,7 @@ for a_idx, drive_amplitude_factor in enumerate(drive_amplitude_factor_array):
         print (str(np.round(time.time()-time_start, 3) )+ 's has elapsed')
 
 fname = '/Users/longnguyen/Documents/tmp'
-np.save(fname+'_phaseZZ_1121_away',phase)
+np.save(fname+'_phaseZZ_1121_away', phase)
 
 # plt.figure(figsize = [16,9])
 # plt.plot(t_points, np.unwrap(phase[0,0,:]),'-h')
